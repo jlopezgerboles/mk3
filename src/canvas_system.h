@@ -21,15 +21,11 @@
 
 typedef struct canvas_framework {
 	SDL_Window*	window;
-	SDL_Renderer*	renderer;
 	SDL_Surface*	surface;
-	SDL_Surface*	surface_logo;
-	SDL_Texture*	texture;
-	u8*		canvas_name;
 	u32		canvas_flags;
 	f64		canvas_width;
 	f64		canvas_height;
 } canvas_framework;
 
-canvas_framework* canvas_system_initialize(char* name);
+canvas_framework* canvas_system_initialize(const char* NAME);
 void canvas_system_shutdown(canvas_framework* canvas);

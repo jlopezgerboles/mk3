@@ -22,27 +22,23 @@
 #include <string.h>
 #include <X11/Xlib.h>
 
+const char* NAME = "mk3";
+
 //-----------------------------------------------------------------------------------------------------------------------
 // SDL ACTIVATION.
-//
 #define SDL // COMMENT OUT TO ENABLE THE SDL INITIALIZATION FUNCTIONS.
-//
 // SDL ACTIVATION.
 //-----------------------------------------------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------------------------------------
 // MERCURY ENGINE ACTIVATION.
-//
 //#define MERCURY // COMMENT OUT TO ENABLE THE USE OF THE MERCURY INITIALIZATION FUNCTIONS.
-//
 // MERCURY ENGINE ACTIVATION.
 //-----------------------------------------------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------------------------------------
 // Testing variables.
-//
 //#define TESTING_MODE // COMMENT OUT TO DISABLE TESTING MODE.
-//
 // End Testing variables.
 //-----------------------------------------------------------------------------------------------------------------------
 
@@ -50,24 +46,20 @@ void main(int argc, char **argv) {
 
 //-----------------------------------------------------------------------------------------------------------------------
 // THIS IS THE MODULE OF INITIALIZATION FUNCTIONS USING THE SLD LIBRARY.
-
 #ifdef SDL
-	canvas_framework* canvas = canvas_system_initialize("mk3");
-	//blitter_framework* blitter = blitter_system_initialize(canvas);
+	canvas_framework* canvas = canvas_system_initialize(NAME);
+	blitter_framework* blitter = blitter_system_initialize(canvas);
 	SDL_Event event;
 #endif
-
 // THIS IS THE MODULE OF INITIALIZATION FUNCTIONS USING THE SLD LIBRARY.
 //-----------------------------------------------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------------------------------------
 // THIS IS THE MERCURY MODULE OF INITIALIZATION FUNCTIONS.
-
 #ifdef MERCURY
 	mercury_canvas_framework* mercury_canvas = mercury_canvas_system_initialize();
 	XEvent x11_event;
 #endif
-
 // THIS IS THE MERCURY MODULE OF INITIALIZATION FUNCTIONS.
 //-----------------------------------------------------------------------------------------------------------------------
 
@@ -79,9 +71,9 @@ void main(int argc, char **argv) {
 	#ifdef SDL	
 		SDL_UpdateWindowSurface(canvas -> window);
 		while(SDL_PollEvent(&event) != 0) {
-                	if((event.type == SDL_QUIT) || (event.key.keysym.sym == SDLK_ESCAPE)) {
+			if((event.type == SDL_QUIT) || (event.key.keysym.sym == SDLK_ESCAPE)) {
 				quit = TRUE;
-				//blitter_system_shutdown(blitter);
+				blitter_system_shutdown(blitter);
 				canvas_system_shutdown(canvas);
 				SDL_Quit();
 			}

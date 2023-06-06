@@ -14,89 +14,113 @@
 //-----------------------------------------------------------------------------------------------------------------------
 
 #include "blitter_system.h"
-#include "canvas_system.h"
-
-#include <stdio.h>
-
-#define SPRITE_WIDTH_HEIGHT 8
-
-static i8 atlas[8][10] =
-	"00000000010000000000000000111111111000000001000000000000000000000000000000000000"; // This is a 8x10 background.
 
 /* 
  * - Function: blitter_framework_create().
  * - Returns: Returns a pointer to a newly created blitter framework.
  */
-static blitter_framework* blitter_framework_create() {
+blitter_framework* blitter_framework_create() {
 	blitter_framework* blitter;
 	blitter = malloc(sizeof(blitter_framework));
-	if(blitter) printf("[OK] Blitter created.");
+	if(blitter) printf("[OK] Blitter framework created.\n");
 	return blitter;
 }
 
 /* 
- * - Function: blitter_system_load_atlas(i8* path).
- * - Returns: Returns a pointer to the surface where the atlas is stored (the source surface).
+ * - Function: blitter_system_source_surface(i8* path).
+ * - Returns: Returns a pointer to the surface where the tileset is stored in memory.
  */
-static SDL_Surface* blitter_system_load_atlas(i8* path) {
-	SDL_Surface* source = SDL_LoadBMP("path");
-	if(source) printf("[OK] Source created.");
-	return source;
+SDL_Surface* blitter_system_surface_source(i8* path) {
+	SDL_Surface* surface_source = SDL_LoadBMP(path);
+	return surface_source;
 }
 
 /* 
- * - Function: blitter_system_translate_code(i8* code).
- * - Returns: Returns a vector 2 with the coordinates in the atlas for the selected tile.
+ * - Function: blitter_system_create_tileset(SDL_Surface* surface_source).
+ * - Returns: Returns the total number of tiles in the tileset
  */
-static vec2 blitter_system_translate_code(i8* code) {
-	//vec2 coordinates;
-	//i8* code;
-	//return coordinates;
-}
+SDL_Rect* blitter_system_create_tileset(SDL_Surface* surface_source) {
+	i8 TILE_WIDTH = 16;
+	i8 TILE_HEIGHT = 16;
+	i8 tiles_width = (surface_source -> w)/TILE_WIDTH;
+	i8 tiles_height = (surface_source -> h)/TILE_HEIGHT;
+	i16 number_tiles = tiles_width * tiles_height;
 
-/* 
- * - Function: blitter_system_map().
- * - Returns: Returns a pointer to an the name of the window.
- */
-static void blitter_system_map(blitter_framework* blitter) {
-
-	SDL_LockSurface(blitter -> surface_source);
-	SDL_LockSurface(blitter -> surface_destination);
-
-	for(i8 n = 0; n < 80; n++) {
-		//vec2 atlas_coordinates = blitter_system_translate_code(atlas[n]);
-		blitter -> rect_source -> x = atlas[n]*8;
-		blitter -> rect_source -> y = 0;
-		blitter -> rect_destination -> x = n*8;
-		blitter -> rect_destination -> y = 0;
-		SDL_BlitSurface(
-			blitter -> surface_source,
-			blitter -> rect_source,
-			blitter -> surface_destination,
-			blitter -> rect_destination
-		);
+	SDL_Rect* tile = malloc(number_tiles * sizeof(SDL_Rect));
+	
+	i32 n = 0;
+	for(i8 y = 0; y < tiles_height; y++) {
+		for(i8 x = 0; x < tiles_width ; x++) {
+			tile[n].x = x * 16;
+			tile[n].y = y * 16;
+			tile[n].w = 16;
+			tile[n].h = 16;
+			n++;
+		}
 	}
-
-	SDL_UnlockSurface(blitter -> surface_destination);
-	SDL_UnlockSurface(blitter -> surface_source);
+	return tile;
 }
 
 /* 
+ * - Function: blitter_system_create_tilemap(SDL_Surface* surface_source).
+ * - Returns: Returns the total number of tiles in the tileset
+ */
+SDL_Rect* blitter_system_create_tilemap(SDL_Surface* surface_destination) {
+
+	i8 tiles_width = 10;
+	i8 tiles_height = 8;
+	i16 number_tiles = tiles_width * tiles_height;
+
+	SDL_Rect* tilemap = malloc(number_tiles * sizeof(SDL_Rect));
+
+	i32 n = 0;
+	for(i8 y = 0; y < tiles_height; y++) {
+		for(i8 x = 0; x < tiles_width ; x++) {
+			tilemap[n].x = x * 100;
+			tilemap[n].y = y * 100;
+			tilemap[n].w = 100;
+			tilemap[n].h = 100;
+			n++;
+		}
+	}
+	return tilemap;
+}
+
+/*
  * - Function: blitter_system_initialize(canvas_framework* canvas).
- * - Returns: Initializes the blitter system and creates the blitting framework.
+ * - Returns: Creates the blitting framework and initializes the blitting system.
  */
 blitter_framework* blitter_system_initialize(canvas_framework* canvas) {
 	blitter_framework* blitter = blitter_framework_create();
-	blitter -> rect_source -> w = SPRITE_WIDTH_HEIGHT;
-	blitter -> rect_source -> h = SPRITE_WIDTH_HEIGHT;
-	blitter -> rect_destination -> w = SPRITE_WIDTH_HEIGHT;
-	blitter -> rect_destination -> h = SPRITE_WIDTH_HEIGHT;
-	blitter -> surface_source = blitter_system_load_atlas("res/bmp/tileset.bmp");
-	if(blitter -> surface_source) printf("[OK] Blitter source assigned to blitter framework.");
+	blitter -> surface_source = blitter_system_surface_source("res/bmp/tileset.bmp");
+	if(blitter -> surface_source) printf("[OK] Blitter framework embeded with source surface.\n");
 	blitter -> surface_destination = canvas -> surface;
-	if(blitter -> surface_destination) printf("[OK] Blitter destination assigned to blitter framework.");
-	blitter_system_map(blitter);
+	if(blitter -> surface_destination) printf("[OK] Blitter framework embeded with destination surface.\n");
+	blitter -> tile = blitter_system_create_tileset(blitter -> surface_source);
+	if(blitter -> tile) printf("[OK] Blitter framework embeded with tileset.\n");
+	blitter -> tilemap = blitter_system_create_tilemap(blitter -> surface_destination);
+	if(blitter -> tilemap) printf("[OK] Blitter framework embeded with tilemap.\n");
+
+	printf("The values of tile 7 in tileset are %ix and %iy\n", blitter -> tile[7].x, blitter -> tile[7].y);
+	printf("The values of tile 3 in tilemap are %ix and %iy\n", blitter -> tilemap[3].x, blitter -> tilemap[3].y);
+	printf("Surface source is %i per pixels.\n", blitter -> surface_source -> format -> format);
+	printf("Surface destination is %i per pixel.\n", blitter -> surface_destination -> format -> format);
+
+	SDL_UnlockSurface(blitter -> surface_source);
+	SDL_UnlockSurface(blitter -> surface_destination);
+
+	i32 check = SDL_BlitSurface(
+		blitter -> surface_source,
+		&blitter -> tile[7],
+		blitter -> surface_destination,
+		&blitter -> tilemap[3]);
+	printf("%i %s\n", check, SDL_GetError());
+
+	SDL_LockSurface(blitter -> surface_destination);
+	SDL_LockSurface(blitter -> surface_source);
+
 	return blitter;
+
 }
 
 /* 
@@ -108,9 +132,10 @@ void blitter_system_update() {
 
 /* 
  * - Function: blitter_system_shutdown(blitter_framework* blitter).
- * - Returns: Shutd down all the elements of the blitter system.
+ * - Returns: Shutd down the blitting system and all its elements.
  */
 void blitter_system_shutdown(blitter_framework* blitter) {
+	SDL_FreeSurface(blitter -> surface_destination);
 	SDL_FreeSurface(blitter -> surface_source);
 	free(blitter);
 }

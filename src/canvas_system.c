@@ -23,17 +23,8 @@
 canvas_framework* canvas_framework_create() {
 	canvas_framework* canvas;
 	canvas = malloc(sizeof(canvas_framework));
+	if(canvas) printf("[OK] Canvas framework created.\n");
 	return canvas;
-}
-
-/* 
- * - Function: canvas_system_name().
- * - Returns: Returns a pointer to an the name of the window.
- */
-u8* canvas_system_name() {
-	u8* name;
-	name = "mk3";
-	return name;
 }
 
 /* 
@@ -99,9 +90,9 @@ u32 canvas_system_window_flags() {
  * - Function: canvas_system_window(canvas_framework* canvas)
  * - Returns: Returns a pointer to the SDL Window later assigned to the canvas framework.
  */
-SDL_Window* canvas_system_window(canvas_framework* canvas) {
+SDL_Window* canvas_system_window(canvas_framework* canvas, const char* NAME) {
 	SDL_Window* window = SDL_CreateWindow(
-		canvas -> canvas_name,
+		NAME,
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
 		canvas -> canvas_width,
@@ -120,47 +111,19 @@ SDL_Surface* canvas_system_surface(SDL_Window* window) {
 }
 
 /* 
- * - Function: canvas_system_surface_logo(SDL_Window* window)
- * - Returns: Returns a pointer to the SDL Surface containing the company logo.
- */
-SDL_Surface* canvas_system_surface_logo(SDL_Window* window) {
-	SDL_Surface* surface_logo = SDL_LoadBMP("res/bmp/test.bmp");
-	if(surface_logo) printf("[OK] Surface logo created.\n");
-	return surface_logo;
-}
-
-/* 
- * - Function: canvas_system_renderer(SDL_Window* window)
- * - Returns: Returns a pointer to the SDL Renderer later assigned to the canvas framework.
- */
-SDL_Renderer* canvas_system_renderer(SDL_Window* window) {
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if(renderer) printf("[OK] Renderer created.\n");
-	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
-	return renderer;
-}
-
-/* 
  * - Function: canvas_system_initialize().
  * - Returns: Returns the whole canvas framework used in our application.
  */
-canvas_framework* canvas_system_initialize(char* name) {
+canvas_framework* canvas_system_initialize(const char* NAME) {
 	canvas_framework* canvas = canvas_framework_create();
-	canvas -> canvas_name = canvas_system_name();
-	canvas -> canvas_width = 1200.00; //canvas_system_desired_width();
+	canvas -> canvas_width = 1000.00; //canvas_system_desired_width();
 	canvas -> canvas_height = 800.00; //canvas_system_desired_height();
 	canvas -> canvas_flags = canvas_system_window_flags();
-	canvas -> window = canvas_system_window(canvas);
-	canvas -> renderer = canvas_system_renderer(canvas -> window);
-	if(canvas -> renderer) printf("[OK] Renderer assigned to canvas framework!\n");
+	if(canvas -> canvas_flags) printf("[OK] Canvas framework embeded with canvas flags.\n");
+	canvas -> window = canvas_system_window(canvas, NAME);
+	if(canvas -> window) printf("[OK] Canvas framework embeded with window.\n");
 	canvas -> surface = canvas_system_surface(canvas -> window);
-	if(canvas -> surface) printf("[OK] Surface assigned to canvas framework!\n");
-	canvas -> surface_logo = canvas_system_surface_logo(canvas -> window);
-	if(canvas -> surface_logo) printf("[OK] Surface logo assigned to canvas framework!\n");
-	SDL_BlitSurface(canvas -> surface_logo, NULL, canvas -> surface, NULL);
-	SDL_BlitScaled(canvas -> surface_logo, NULL, canvas -> surface, NULL);
+	if(canvas -> surface) printf("[OK] Canvas framework embeded with surface.\n");
 	return canvas;
 }
 
@@ -170,7 +133,6 @@ canvas_framework* canvas_system_initialize(char* name) {
  */
 void canvas_system_shutdown(canvas_framework* canvas) {
 	SDL_FreeSurface(canvas -> surface);
-	SDL_DestroyRenderer(canvas -> renderer);
 	SDL_DestroyWindow(canvas -> window);
 	free(canvas);
 }

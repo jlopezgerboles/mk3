@@ -22,9 +22,10 @@
 
 typedef struct blitter_framework {
 	SDL_Surface*	surface_source;
+	SDL_Surface*	surface_temp;
 	SDL_Surface*	surface_destination;
-	SDL_Rect*	rect_source;
-	SDL_Rect*	rect_destination;
+	SDL_Rect*	tile;
+	SDL_Rect*	tilemap;
 } blitter_framework;
 
 blitter_framework* blitter_system_initialize(canvas_framework* canvas);
