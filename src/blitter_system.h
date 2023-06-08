@@ -21,13 +21,13 @@
 #include <SDL2/SDL.h>
 
 typedef struct blitter_framework {
+	SDL_Surface*	surface_bmp;
 	SDL_Surface*	surface_source;
-	SDL_Surface*	surface_temp;
 	SDL_Surface*	surface_destination;
 	SDL_Rect*	tile;
 	SDL_Rect*	tilemap;
 } blitter_framework;
 
 blitter_framework* blitter_system_initialize(canvas_framework* canvas);
-void blitter_system_update();
+void blitter_system_update(blitter_framework* blitter);
 void blitter_system_shutdown(blitter_framework* blitter);
