@@ -27,56 +27,61 @@ blitter_framework* blitter_framework_create() {
 }
 
 /* 
- * - Function: blitter_system_source_surface(i8* path).
+ * - Function: blitter_system_surface_source(i8* path).
  * - Returns: Returns a pointer to the surface where the tileset is stored in memory.
  */
-SDL_Surface* blitter_system_surface_bmp(i8* path) {
-	SDL_Surface* surface_bmp = SDL_LoadBMP(path);
-	return surface_bmp;
+SDL_Surface* blitter_system_surface_source(i8* path) {
+	SDL_Surface* surface_source = SDL_LoadBMP(path);
+	return surface_source;
+}
+
+/* 
+ * - Function: blitter_system_surface_destination(i8* path).
+ * - Returns: Returns a pointer to the surface where the tileset is stored in memory.
+ */
+SDL_Surface* blitter_system_surface_destination(SDL_Window* window) {
+	SDL_Surface* surface_destination = SDL_CreateRGBSurface(0, 256, 192, 32, 0, 0, 0, 0);
+	return surface_destination;
+}
+
+/* 
+ * - Function: blitter_system_create_tileset(SDL_Surface* surface_bmp).
+ * - Returns: Returns a pointer to the SDL_Rect array with the coordinates of each tile.
+ */
+SDL_Rect* blitter_system_create_tileset(SDL_Surface* surface_source) {
+	i8 width = surface_source -> w/8;
+	i8 height = surface_source -> h/8;
+	i32 number_tiles = width * height;
+	SDL_Rect* tileset = malloc(number_tiles * sizeof(SDL_Rect));
+	i64 n = 0;
+	for(i8 y = 0; y < height; y++) {
+		for(i8 x = 0; x < width; x++) {
+			tileset[n].x = x * 8;
+			tileset[n].y = y * 8;
+			tileset[n].w = 8;
+			tileset[n].h = 8;
+			n++;
+		}
+	}
+	return tileset;
 }
 
 /* 
  * - Function: blitter_system_create_tileset(SDL_Surface* surface_source).
- * - Returns: Returns the total number of tiles in the tileset
- */
-SDL_Rect* blitter_system_create_tileset(SDL_Surface* surface_bmp) {
-	i8 tiles_width = (surface_bmp -> w)/16;
-	i8 tiles_height = (surface_bmp -> h)/16;
-	i16 number_tiles = tiles_width * tiles_height;
-	printf("We have a total of %i tiles.\n", number_tiles);
-	SDL_Rect* tile = malloc(number_tiles * sizeof(SDL_Rect));
-	i32 n = 0;
-	for(i8 y = 0; y < tiles_height; y++) {
-		for(i8 x = 0; x < tiles_width ; x++) {
-			tile[n].x = x * 16;
-			tile[n].y = y * 16;
-			tile[n].w = 16;
-			tile[n].h = 16;
-			n++;
-		}
-	}
-	return tile;
-}
-
-/* 
- * - Function: blitter_system_create_tilemap(SDL_Surface* surface_source).
- * - Returns: Returns the total number of tiles in the tileset
+ * - Returns: Returns a pointer to the SDL_Rect array with the coordinates in the surface destination.
  */
 SDL_Rect* blitter_system_create_tilemap(SDL_Surface* surface_destination) {
-
-	i8 tiles_width = 10;
-	i8 tiles_height = 8;
-	i16 number_tiles = tiles_width * tiles_height;
-
+	i8 width = surface_destination -> w/8;
+	i8 height = surface_destination -> h/8;
+	i16 number_tiles = width * height;
 	SDL_Rect* tilemap = malloc(number_tiles * sizeof(SDL_Rect));
-
-	i32 n = 0;
-	for(i8 y = 0; y < tiles_height; y++) {
-		for(i8 x = 0; x < tiles_width ; x++) {
-			tilemap[n].x = x * 100;
-			tilemap[n].y = y * 100;
-			tilemap[n].w = 100;
-			tilemap[n].h = 100;
+	i64 n = 0;
+	for(i8 y = 0; y < height; y++) {
+		for(i8 x = 0; x < width; x++) {
+			tilemap[n].x = x * 8;
+			tilemap[n].y = y * 8;
+			tilemap[n].w = 8;
+			tilemap[n].h = 8;
 			n++;
 		}
 	}
@@ -88,45 +93,78 @@ SDL_Rect* blitter_system_create_tilemap(SDL_Surface* surface_destination) {
  * - Returns: Creates the blitting framework and initializes the blitting system.
  */
 blitter_framework* blitter_system_initialize(canvas_framework* canvas) {
+
 	blitter_framework* blitter = blitter_framework_create();
-	blitter -> surface_bmp = blitter_system_surface_bmp("res/bmp/tileset1.bmp");
-	if(blitter -> surface_bmp) printf("[OK] Blitter framework embeded with surface bmp.\n");
-	blitter -> surface_source = canvas -> surface;
+
+	blitter -> surface_source = blitter_system_surface_source("res/bmp/tileset.bmp");
 	if(blitter -> surface_source) printf("[OK] Blitter framework embeded with surface source.\n");
-	blitter -> surface_destination = canvas -> surface;
-	if(blitter -> surface_destination) printf("[OK] Blitter framework embeded with surface destination.\n");
-	blitter -> tile = blitter_system_create_tileset(blitter -> surface_bmp);
-	if(blitter -> tile) printf("[OK] Blitter framework embeded with tileset.\n");
+	blitter -> surface_destination = blitter_system_surface_destination(canvas -> window);
+	if(blitter -> surface_destination) printf("[OK] Blitter framework embeded with surface source.\n");
+	blitter -> tileset = blitter_system_create_tileset(blitter -> surface_source);
 	blitter -> tilemap = blitter_system_create_tilemap(blitter -> surface_destination);
-	if(blitter -> tilemap) printf("[OK] Blitter framework embeded with tilemap.\n");
-
-	SDL_UnlockSurface(blitter -> surface_source);
-	SDL_UnlockSurface(blitter -> surface_bmp);
-
-	SDL_BlitSurface(blitter -> surface_bmp,	NULL, blitter -> surface_source, NULL);
-
-	SDL_LockSurface(blitter -> surface_bmp);
-	SDL_LockSurface(blitter -> surface_source);
 
 	SDL_UnlockSurface(blitter -> surface_source);
 	SDL_UnlockSurface(blitter -> surface_destination);
-	
-	i8 n = 1;
-	for(i8 i = 0; i < 12; i++) {
-		SDL_BlitScaled(
+	SDL_UnlockSurface(canvas -> surface);
+	i64 lvl_0[768] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	0, 0, 0, 0, 0, 0, 0, 24, 24, 0, 25, 17, 14, 11, 11, 0, 0, 11, 25, 18, 26, 14, 0, 24, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 12, 13, 11, 11, 0, 0, 14, 15, 16, 14, 17, 16, 20, 13, 16, 19, 14, 15, 16, 0, 0, 0, 0, 0, 0,	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 20, 21, 16, 12, 18, 17, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	};
+	i64 lvl_1[768] = {
+		10, 11, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+		10, 12, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+		10, 13, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+		10, 14, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+		10, 15, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	};
+	i64 n = 0;
+	for(i64 i = 0; i < 768; i++) {
+		SDL_BlitSurface(
 			blitter -> surface_source,
-			&blitter -> tile[50],
+			&blitter -> tileset[lvl_0[n]],
 			blitter -> surface_destination,
 			&blitter -> tilemap[n]);
-		SDL_UpdateWindowSurface(canvas -> window);
-		SDL_Delay(100);
-		n++;
+			n++;
 	}
-
+	SDL_BlitScaled(
+		blitter -> surface_destination,
+		NULL,
+		canvas -> surface,
+		NULL
+	);
+	SDL_UpdateWindowSurface(canvas -> window);
+	SDL_LockSurface(canvas -> surface);
 	SDL_LockSurface(blitter -> surface_destination);
 	SDL_LockSurface(blitter -> surface_source);
-
-	SDL_FreeSurface(blitter -> surface_bmp);
 
 	return blitter;
 }
@@ -136,24 +174,6 @@ blitter_framework* blitter_system_initialize(canvas_framework* canvas) {
  * - Returns: Refreshses the blitting of the destination surface on request.
  */
 void blitter_system_update(blitter_framework* blitter) {
-/*
-	SDL_UnlockSurface(blitter -> surface_source);
-	SDL_UnlockSurface(blitter -> surface_destination);
-	
-	i8 i  = 0;
-	while(i < 70) {
-	//for(i8 i = 0; i < 70; i++)
-		SDL_BlitScaled(
-			blitter -> surface_source,
-			&blitter -> tile[3],
-			blitter -> surface_destination,
-			&blitter -> tilemap[i]);
-		SDL_Delay(100);
-	}
-
-	SDL_LockSurface(blitter -> surface_destination);
-	SDL_LockSurface(blitter -> surface_source);
-*/
 }
 
 /* 

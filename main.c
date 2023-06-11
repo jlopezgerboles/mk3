@@ -69,7 +69,7 @@ void main(int argc, char **argv) {
 	// --------------------------------------------------------------------------------------------------------------
 	// SDL GAME LOOP
 	#ifdef SDL	
-		SDL_UpdateWindowSurface(canvas -> window);
+		//SDL_UpdateWindowSurface(canvas -> window);
 		while(SDL_PollEvent(&event) != 0) {
 			if((event.type == SDL_QUIT) || (event.key.keysym.sym == SDLK_ESCAPE)) {
 				quit = TRUE;

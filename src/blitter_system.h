@@ -21,10 +21,9 @@
 #include <SDL2/SDL.h>
 
 typedef struct blitter_framework {
-	SDL_Surface*	surface_bmp;
 	SDL_Surface*	surface_source;
 	SDL_Surface*	surface_destination;
-	SDL_Rect*	tile;
+	SDL_Rect*	tileset;
 	SDL_Rect*	tilemap;
 } blitter_framework;
 

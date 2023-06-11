@@ -107,6 +107,7 @@ SDL_Window* canvas_system_window(canvas_framework* canvas, const char* NAME) {
  */
 SDL_Surface* canvas_system_surface(SDL_Window* window) {
 	SDL_Surface* surface = SDL_GetWindowSurface(window);
+	printf("Canvas surface is %i pixels wide and %i pixels high.\n", surface -> w, surface -> h);
 	return surface;
 }
 
@@ -116,8 +117,8 @@ SDL_Surface* canvas_system_surface(SDL_Window* window) {
  */
 canvas_framework* canvas_system_initialize(const char* NAME) {
 	canvas_framework* canvas = canvas_framework_create();
-	canvas -> canvas_width = 1000.00; //canvas_system_desired_width();
-	canvas -> canvas_height = 800.00; //canvas_system_desired_height();
+	canvas -> canvas_width = 1024.00; //canvas_system_desired_width();
+	canvas -> canvas_height = 768.00; //canvas_system_desired_height();
 	canvas -> canvas_flags = canvas_system_window_flags();
 	if(canvas -> canvas_flags) printf("[OK] Canvas framework embeded with canvas flags.\n");
 	canvas -> window = canvas_system_window(canvas, NAME);
