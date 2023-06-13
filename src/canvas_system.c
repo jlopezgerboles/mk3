@@ -16,6 +16,9 @@
 #include "standard.h"
 #include "canvas_system.h"
 
+i8 CANVAS_TILE_WIDTH = 32;
+i8 CANVAS_TILE_HEIGHT = 32;
+
 /* 
  * - Function: canvas_framework_create().
  * - Returns: Returns a pointer to an empry canvas framework and allocates its memory.
@@ -23,7 +26,6 @@
 canvas_framework* canvas_framework_create() {
 	canvas_framework* canvas;
 	canvas = malloc(sizeof(canvas_framework));
-	if(canvas) printf("[OK] Canvas framework created.\n");
 	return canvas;
 }
 
@@ -107,8 +109,33 @@ SDL_Window* canvas_system_window(canvas_framework* canvas, const char* NAME) {
  */
 SDL_Surface* canvas_system_surface(SDL_Window* window) {
 	SDL_Surface* surface = SDL_GetWindowSurface(window);
-	printf("Canvas surface is %i pixels wide and %i pixels high.\n", surface -> w, surface -> h);
 	return surface;
+}
+
+/* 
+ * - Function: canvas_system_create_tilemap(SDL_Surface* surface, i8 tile_width, i8 tile_height).
+ * - Returns: Returns a pointer to the SDL_Rect array with the coordinates in the canvas surface.
+ */
+SDL_Rect* canvas_system_create_tilemap(SDL_Surface* surface_destination, i8 tile_width, i8 tile_height) {
+	i8 width = surface_destination -> w/tile_width;
+	i8 height = surface_destination -> h/tile_height;
+	printf("Canvas surface is %i pixels wide.\n", surface_destination -> w);
+	printf("Canvas surface is %i pixels high.\n", surface_destination -> h);
+	printf("Canvas surface is %i tiles wide and %i tiles high\n", width, height);
+	i32 number_tiles = width * height;
+	SDL_Rect* tile = malloc(number_tiles * sizeof(SDL_Rect));
+	printf("Canvas has a total of %i tiles\n", number_tiles);
+	i64 n = 0;
+	for(i8 y = 0; y < height; y++) {
+		for(i8 x = 0; x < width; x++) {
+			tile[n].x = x * tile_width;
+			tile[n].y = y * tile_height;
+			tile[n].w = tile_width;
+			tile[n].h = tile_height;
+			n++;
+		}
+	}
+	return tile;
 }
 
 /* 
@@ -117,14 +144,17 @@ SDL_Surface* canvas_system_surface(SDL_Window* window) {
  */
 canvas_framework* canvas_system_initialize(const char* NAME) {
 	canvas_framework* canvas = canvas_framework_create();
+	if(canvas) printf("Canvas framework created.\n");
 	canvas -> canvas_width = 1024.00; //canvas_system_desired_width();
 	canvas -> canvas_height = 768.00; //canvas_system_desired_height();
 	canvas -> canvas_flags = canvas_system_window_flags();
-	if(canvas -> canvas_flags) printf("[OK] Canvas framework embeded with canvas flags.\n");
+	if(canvas -> canvas_flags) printf("Canvas framework embeded with canvas flags.\n");
 	canvas -> window = canvas_system_window(canvas, NAME);
-	if(canvas -> window) printf("[OK] Canvas framework embeded with window.\n");
+	if(canvas -> window) printf("Canvas framework embeded with window.\n");
 	canvas -> surface = canvas_system_surface(canvas -> window);
-	if(canvas -> surface) printf("[OK] Canvas framework embeded with surface.\n");
+	if(canvas -> surface) printf("Canvas framework embeded with surface.\n");
+	canvas -> tilemap = canvas_system_create_tilemap(canvas -> surface, CANVAS_TILE_WIDTH, CANVAS_TILE_HEIGHT);
+	if(canvas -> tilemap) printf("Canvas framework embeded with tilemap.\n");
 	return canvas;
 }
 

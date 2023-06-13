@@ -25,6 +25,7 @@ typedef struct canvas_framework {
 	u32		canvas_flags;
 	f64		canvas_width;
 	f64		canvas_height;
+	SDL_Rect*	tilemap;
 } canvas_framework;
 
 canvas_framework* canvas_system_initialize(const char* NAME);
