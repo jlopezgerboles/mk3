@@ -21,12 +21,9 @@
 #include <SDL2/SDL.h>
 
 typedef struct blitter_framework {
-	SDL_Surface*	surface_source_tileset;
-	SDL_Surface*	surface_source_spriteset;
-	SDL_Surface*	surface_destination_tileset;
-	SDL_Surface*	surface_destination_spriteset;
-	SDL_Rect*	rect_tileset;
-	SDL_Rect*	rect_spriteset;
+	SDL_Surface*	surface_bmp;
+	SDL_Surface*	surface_source;
+	SDL_Rect*	rect_source;
 } blitter_framework;
 
 blitter_framework* blitter_system_initialize(canvas_framework* canvas);

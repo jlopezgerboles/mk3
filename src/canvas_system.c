@@ -153,8 +153,8 @@ canvas_framework* canvas_system_initialize(const char* NAME) {
 	if(canvas -> window) printf("Canvas framework embeded with window.\n");
 	canvas -> surface = canvas_system_surface(canvas -> window);
 	if(canvas -> surface) printf("Canvas framework embeded with surface.\n");
-	canvas -> tilemap = canvas_system_create_tilemap(canvas -> surface, CANVAS_TILE_WIDTH, CANVAS_TILE_HEIGHT);
-	if(canvas -> tilemap) printf("Canvas framework embeded with tilemap.\n");
+	canvas -> rect_destination = canvas_system_create_tilemap(canvas -> surface, CANVAS_TILE_WIDTH, CANVAS_TILE_HEIGHT);
+	if(canvas -> rect_destination) printf("Canvas framework embeded with tilemap.\n");
 	return canvas;
 }
 
