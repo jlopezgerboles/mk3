@@ -9,20 +9,23 @@
 // warranty of FITNESS FOR A PARTICULAR PURPOSE.
 //
 // DESCRIPTION:
-//  -
+//  - Main script og the application, the systems are being sourced from the foldr "src". Please notice the mercury
+//	script are not yet implemented.
 //
 //-----------------------------------------------------------------------------------------------------------------------
 
 #include "src/standard.h"
 #include "src/canvas_system.h"
 #include "src/blitter_system.h"
+#include "src/timer_system.h"
+
 #include "src/mercury_canvas_system.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <X11/Xlib.h>
 
-const char* NAME = "mk3";
+const i8* NAME = "mk3";
 
 //-----------------------------------------------------------------------------------------------------------------------
 // SDL ACTIVATION.
@@ -49,6 +52,8 @@ void main(int argc, char **argv) {
 #ifdef SDL
 	canvas_framework* canvas = canvas_system_initialize(NAME);
 	blitter_framework* blitter = blitter_system_initialize(canvas);
+	timer_framework* timer = timer_system_initialize();
+	u32 t0 = 0;
 	SDL_Event event;
 #endif
 // THIS IS THE MODULE OF INITIALIZATION FUNCTIONS USING THE SLD LIBRARY.
@@ -69,10 +74,12 @@ void main(int argc, char **argv) {
 	// --------------------------------------------------------------------------------------------------------------
 	// SDL GAME LOOP
 	#ifdef SDL	
-		//SDL_UpdateWindowSurface(canvas -> window);
 		while(SDL_PollEvent(&event) != 0) {
+			while(!SDL_TICKS_PASSED(SDL_GetTicks(), t0 + FRAMERATE_TARGET));
+			t0 = SDL_GetTicks();
 			if((event.type == SDL_QUIT) || (event.key.keysym.sym == SDLK_ESCAPE)) {
 				quit = TRUE;
+				//timer_system_shutdown(timer);
 				blitter_system_shutdown(blitter);
 				canvas_system_shutdown(canvas);
 				SDL_Quit();

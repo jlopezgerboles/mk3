@@ -16,6 +16,9 @@ typedef double f64;
 
 typedef char b8;
 
+#define FPS 10
+#define FRAMERATE_TARGET (1000 / FPS)
+
 #define TRUE 1
 #define FALSE 0
 
